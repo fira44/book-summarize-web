@@ -75,6 +75,3 @@ To try this project on your machine:
 
 Contributions are welcome! If you have ideas for improvements or new features, fork the repository, make changes, and submit a pull request.
 
-## 📄 License
-
-This project is open-source under the [MIT License](LICENSE).

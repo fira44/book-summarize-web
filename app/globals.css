@@ -44,6 +44,10 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+  .scrollbar-custom {
+    scrollbar-color: gray transparent;
+    scrollbar-width: thin;
+  }
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -71,7 +75,14 @@
     --chart-5: 340 75% 55%;
   }
 }
-
+html {
+  scroll-behavior: smooth;
+}
+audio::-webkit-media-controls-play-button,
+     audio::-webkit-media-controls-panel {
+     background-color: rgb(78, 78, 78);
+     color: #000;
+}
 @layer base {
   * {
     @apply border-border;

@@ -15,7 +15,7 @@ export default function Hero() {
           </h1>
           <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
             Upload PDFs or paste article URLs to get intelligent summaries in seconds. 
-            Optional MP3 audio generation in multiple languages. Pay only for what you use.
+            Optional MP3 audio generation in multiple languages.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-lg px-8 bg-primary hover:bg-primary/90">
@@ -24,13 +24,15 @@ export default function Hero() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button size="lg" className="text-lg px-8 bg-black border-primary/20 hover:border-primary/40">
-              Learn More
+            <Button asChild size="lg" className="text-lg px-8 bg-black border-primary/20 hover:border-primary/40">
+            <Link href="#about">
+            Learn More
+            </Link>
             </Button>
           </div>
 
           {/* Feature highlights */}
-          <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <div className="flex flex-col items-center p-6 rounded-lg border border-border bg-card/50 backdrop-blur-sm">
               <div className="p-3 rounded-full bg-primary/10 mb-4">
                 <FileText className="h-6 w-6 text-primary" />
@@ -58,15 +60,7 @@ export default function Hero() {
                 Support for 50+ languages with translation
               </p>
             </div>
-            <div className="flex flex-col items-center p-6 rounded-lg border border-border bg-card/50 backdrop-blur-sm">
-              <div className="p-3 rounded-full bg-primary/10 mb-4">
-                <Zap className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2 text-foreground">Pay Per Use</h3>
-              <p className="text-muted-foreground text-center text-sm">
-                No subscriptions, pay only for what you need
-              </p>
-            </div>
+            
           </div>
         </div>
       </div>

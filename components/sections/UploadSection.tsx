@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge'
 import { Upload, Link, FileText, Globe, CreditCard, Headphones } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
+import Modal from '../modal'
+import axios from 'axios';
 
 const languages = [
   { code: 'en', name: 'English' },
@@ -23,7 +25,8 @@ const languages = [
   { code: 'zh', name: 'Chinese' },
   { code: 'ja', name: 'Japanese' },
   { code: 'ko', name: 'Korean' },
-  { code: 'ar', name: 'Arabic' }
+  { code: 'ar', name: 'Arabic' },
+  { code : 'tr', name : 'Turkish'}
 ]
 
 export default function UploadSection() {
@@ -31,8 +34,9 @@ export default function UploadSection() {
   const [language, setLanguage] = useState('en')
   const [customPrompt, setCustomPrompt] = useState('')
   const [uploading, setUploading] = useState(false)
-  const [generateAudio, setGenerateAudio] = useState(false)
-
+  const [generateAudio, setGenerateAudio] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const pdfRef = useRef<string>('')
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0]
@@ -53,17 +57,25 @@ export default function UploadSection() {
   })
 
   const handleFileUpload = async (file: File) => {
-    setUploading(true)
+    setUploading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      toast.success('File uploaded successfully! Processing...')
-    } catch (error) {
-      toast.error('Upload failed. Please try again.')
+      const res = await fetch("/api/get-pdf", {
+        method: "POST",
+        body: file,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      console.log(data);
+      console.log("Scraped PDF text:", data.text);
+      pdfRef.current = data.text;
+    } catch (err) {
+      console.error(err);
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
+  
+  
 
   const handleUrlSubmit = async () => {
     if (!url) {
@@ -73,21 +85,26 @@ export default function UploadSection() {
     
     setUploading(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const result = await fetch('/api/extract-url',{
+        method : 'POST',
+        body : JSON.stringify({url})
+      })
+      if (!result.ok) throw new Error("Fetching URL failed");
+      const data = await result.json();
+      if (data){
+        pdfRef.current = data.text;
+      }
+      console.log(pdfRef.current)
       toast.success('URL processed successfully! Generating summary...')
       setUrl('')
     } catch (error) {
-      toast.error('Processing failed. Please try again.')
+      toast.error('Fetching URL failed. Please try again.')
     } finally {
       setUploading(false)
     }
   }
-
-  const calculateCost = () => {
-    const baseCost = 0.50 // Base cost for summary
-    const audioCost = generateAudio ? 1.00 : 0 // Additional cost for MP3
-    return (baseCost + audioCost).toFixed(2)
+  const handleGenerate = () => {
+    setIsModalOpen(true);
   }
 
   return (
@@ -181,7 +198,7 @@ export default function UploadSection() {
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent>axios
                       {languages.map((lang) => (
                         <SelectItem key={lang.code} value={lang.code}>
                           <div className="flex items-center">
@@ -210,10 +227,8 @@ export default function UploadSection() {
               <div className="space-y-4">
                 <div className="p-4 rounded-lg border border-border bg-card/30">
                   <div className="flex items-center justify-between mb-3">
-                    <Label className="text-foreground font-medium">Add MP3 Audio</Label>
-                    <Badge variant="secondary" className="bg-purple-500/10 text-purple-400">
-                      +$1.00
-                    </Badge>
+                    <div className="text-foreground font-medium">Add MP3 Audio</div>
+
                   </div>
                   <div className="flex items-center space-x-2 mb-3">
                     <input
@@ -221,7 +236,7 @@ export default function UploadSection() {
                       id="audio"
                       checked={generateAudio}
                       onChange={(e) => setGenerateAudio(e.target.checked)}
-                      className="rounded border-border"
+                      className="rounded border-border cursor-pointer"
                     />
                     <Label htmlFor="audio" className="text-sm text-muted-foreground cursor-pointer">
                       Generate high-quality MP3 audio file
@@ -234,27 +249,11 @@ export default function UploadSection() {
                 </div>
 
                 <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-foreground">Total Cost</span>
-                    <span className="text-2xl font-bold text-primary">${calculateCost()}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <div className="flex justify-between">
-                      <span>Summary</span>
-                      <span>$0.50</span>
-                    </div>
-                    {generateAudio && (
-                      <div className="flex justify-between">
-                        <span>MP3 Audio</span>
-                        <span>$1.00</span>
-                      </div>
-                    )}
-                  </div>
-                  <Button className="w-full mt-3 bg-primary hover:bg-primary/90" disabled={uploading}>
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    {uploading ? 'Processing...' : `Pay & Generate - $${calculateCost()}`}
+                  <Button className="w-full mt-3 bg-primary text-muted hover:bg-primary/90" onClick={handleGenerate} disabled={uploading || !pdfRef.current}>
+                    {uploading ? 'Processing...' : `Generate`}
                   </Button>
                 </div>
+                {isModalOpen && <Modal language={language} pdf={pdfRef.current} setIsModalOpen={setIsModalOpen} />}
               </div>
             </div>
           </CardContent>
